@@ -16,7 +16,11 @@ nivel1.prototype = {
     
     create : function(game){
         this.stage.backgroundColor = '#4FC3F7';
+        pontos = 0;
+        tempo = this.game.time.now;
+        tempoBala = 0;
         
+        // ------------------------- MAPA --------------------- //
         map = game.add.tilemap('map');
         map.addTilesetImage('tiles', 'tiles');
         map.addTilesetImage('morty_buffed2', 'morty');
@@ -30,6 +34,16 @@ nivel1.prototype = {
         map.createFromObjects('portal', 14, 'portal', 0, true, false);
         this.game.physics.arcade.enable(portal);
 
+        textoPontuacao = game.add.text(300, 540, 'Pontos: ' + pontos, 
+                                           {fontSize: '32px',
+                                            fill: '#fff',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        textoPontuacao.fixedToCamera = true;
+        
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
         // ---------------------- JOGADOR ------------------ //
@@ -87,8 +101,8 @@ nivel1.prototype = {
         game.physics.arcade.collide(balas, layer, destruirBala);
         game.physics.arcade.collide(inimigos, balas, inimigoAtingido);
         game.physics.arcade.collide(jogador, portal, jogadorPassaNivel);
-
-
+        tempo = this.game.time.now;
+        
         jogador.body.velocity.x = 0;
         inimigos.setAll('body.velocity.x', -100);
         inimigos.callAll('animations.play', 'animations', 'caminha_esquerda');
@@ -100,8 +114,6 @@ nivel1.prototype = {
                 inimigos.getAt(i).body.velocity.x = 100;
             }
         }
-
-        
         // ----- verifica se clica na seta esquerda
         if(teclas_cursores.left.isDown){
             jogador.body.velocity.x = -150;
@@ -126,22 +138,31 @@ nivel1.prototype = {
         
     },
 };
+
+// ------------- funções secundárias
     function dispararBala(){
         var VEL_BALA = 300;
+        var SPACE_BALA = 250;
         var bala = balas.getFirstExists(false);
 
-        if(bala){
-            // ----------- jogador anda para a direita
-            if(jogador.body.velocity.x > 0){
-                bala.reset(jogador.x + 17, jogador.y + 15);
-                bala.body.velocity.x = VEL_BALA;
-            // ----------- jogador anda para a esquerda
-            } else if(jogador.body.velocity.x < 0){
-                bala.reset(jogador.x - 17, jogador.y + 15);
-                bala.body.velocity.x = -VEL_BALA;
-            // ----------- jogador está parado 
-            } else{
-                bala.body.velocity.x = 0;
+        if(tempo > tempoBala){
+
+            if(bala){
+            
+                // ----------- jogador anda para a direita
+                if(jogador.body.velocity.x > 0){
+                    bala.reset(jogador.x + 17, jogador.y + 15);
+                    bala.body.velocity.x = VEL_BALA;
+                // ----------- jogador anda para a esquerda
+                } else if(jogador.body.velocity.x < 0){
+                    bala.reset(jogador.x - 17, jogador.y + 15);
+                    bala.body.velocity.x = -VEL_BALA;
+                // ----------- jogador está parado 
+                } else{
+                    bala.body.velocity.x = 0;
+                }
+                
+                tempoBala = tempo + SPACE_BALA;
             }
 
         }
@@ -150,6 +171,8 @@ nivel1.prototype = {
     function inimigoAtingido(inimigos, balas){
         inimigos.kill();
         balas.kill();
+        pontos += 20;
+        textoPontuacao.text = 'Pontos: ' + pontos;
         console.log('INIMIGO MORREU');
     }
     // -------- balas atingem Tiles

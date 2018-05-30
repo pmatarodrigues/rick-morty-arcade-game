@@ -1,0 +1,40 @@
+<doctype html></doctype>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Rick and Morty - ARCADE</title>
+    
+        <style type="text/css">
+            body{
+                margin: 0;
+                background: #4FC3F7;
+            }
+        </style>
+    
+        <script type="text/javascript" src="js/phaser.min.js"></script>
+        <script type="text/javascript" src="js/preload.js"></script>
+        <script type="text/javascript" src="js/menu.js"></script>
+        <script type="text/javascript" src="js/nivel1.js"></script>
+        <script type="text/javascript" src="js/init.js"></script>
+
+        <script>
+            (function(){
+                var jogo = new Phaser.Game(800, 600, Phaser.AUTO, "game");
+            
+                jogo.state.add("Init", init);
+                jogo.state.add("Preload", preload);
+                jogo.state.add("menu", menu);
+                jogo.state.add("nivel1", nivel1);
+                //teste
+                jogo.state.start("Init");
+             
+             })();    
+            
+        
+        </script>
+        
+        
+    </head>
+    
+    
+</html>

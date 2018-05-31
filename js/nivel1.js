@@ -7,18 +7,21 @@ var nivel1 = function(game){
     
     var layer;
     var jogador;
+    var vidas;
     
     var bala;
     var botaoDisparar;
 }
 
+
 nivel1.prototype = {
-    
+        
     create : function(game){
         this.stage.backgroundColor = '#4FC3F7';
         pontos = 0;
         tempo = this.game.time.now;
         tempoBala = 0;
+        vidas = 4;
         
         // ------------------------- MAPA --------------------- //
         map = game.add.tilemap('map');
@@ -30,7 +33,7 @@ nivel1.prototype = {
         layer = map.createLayer('Camada de Tiles 1');
         layer.resizeWorld();
         
-        portal = this.game.add.sprite(1200, 360, 'portal');
+        portal = this.game.add.sprite(1200, 70, 'portal');
         map.createFromObjects('portal', 14, 'portal', 0, true, false);
         this.game.physics.arcade.enable(portal);
 
@@ -43,6 +46,16 @@ nivel1.prototype = {
                                            }
                                        );
         textoPontuacao.fixedToCamera = true;
+        
+        textoVidas = game.add.text(600, 540, 'Vidas: ' + vidas, 
+                                           {fontSize: '32px',
+                                            fill: '#fff',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        textoVidas.fixedToCamera = true;
         
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -78,6 +91,9 @@ nivel1.prototype = {
         inimigos.callAll('animations.add', 'animations', 'caminha_direita', [4, 5, 6, 7], 10, true);
         inimigos.setAll('body.bounce.x', 1);
         inimigos.setAll('body.gravity.y', 500);
+        
+        inimigos.setAll('body.velocity.x', game.rnd.integerInRange(-100, -50));
+        inimigos.callAll('animations.play', 'animations', 'caminha_esquerda');
         //--------------------------------------------------- //
         
         // --------------------- BALAS ----------------------//
@@ -96,24 +112,35 @@ nivel1.prototype = {
     
     update : function(game){
         game.physics.arcade.collide(jogador, layer);
-        game.physics.arcade.collide(inimigos, layer);
-        game.physics.arcade.collide(inimigos, jogador, jogadorAtingido);
-        game.physics.arcade.collide(balas, layer, destruirBala);
-        game.physics.arcade.collide(inimigos, balas, inimigoAtingido);
-        game.physics.arcade.collide(jogador, portal, jogadorPassaNivel);
+        game.physics.arcade.collide(inimigos, layer, function(inimigos, layer){
+            if(inimigos.body.blocked.right && inimigos.body.blocked.down){
+                inimigos.body.velocity.x = game.rnd.integerInRange(-100, -50);
+                inimigos.animations.play('caminha_esquerda');
+            }
+            if(inimigos.body.blocked.left && inimigos.body.blocked.down){
+                inimigos.body.velocity.x = game.rnd.integerInRange(50, 100);
+                inimigos.animations.play('caminha_direita');
+            }
+            
+        });
+        
+        game.physics.arcade.collide(inimigos, jogador, function(jogador, inimigos){
+                                        vidas--;
+                                        textoVidas.text = 'Vidas: ' + vidas;
+                                        inimigos.kill();
+                                        if(vidas == 0){
+                                            game.state.start('gameover');
+                                        }
+                                    });
+        game.physics.arcade.collide(balas, layer, this.destruirBala);
+        game.physics.arcade.collide(inimigos, balas, this.inimigoAtingido);
+        game.physics.arcade.collide(jogador, portal, this.jogadorPassaNivel);
         tempo = this.game.time.now;
+        game = this.game;
+        
         
         jogador.body.velocity.x = 0;
-        inimigos.setAll('body.velocity.x', -100);
-        inimigos.callAll('animations.play', 'animations', 'caminha_esquerda');
-        for(var i=0; i < inimigos.lenght; i++){
-            if(inimigos.getAt(i).body.x > jogador.body.x){
-                inimigos.getAt(i).body.velocity.x = -100;
-            }
-            if(inimigos.getAt(i).body.x < jogador.body.x){
-                inimigos.getAt(i).body.velocity.x = 100;
-            }
-        }
+        
         // ----- verifica se clica na seta esquerda
         if(teclas_cursores.left.isDown){
             jogador.body.velocity.x = -150;
@@ -133,22 +160,18 @@ nivel1.prototype = {
         }   
         // --- clica no ESPAÇO
         if(botaoDisparar.isDown){
-            dispararBala();
+            this.dispararBala();
         }
         
     },
-};
-
-// ------------- funções secundárias
-    function dispararBala(){
+    
+    dispararBala : function(){
         var VEL_BALA = 300;
         var SPACE_BALA = 250;
         var bala = balas.getFirstExists(false);
 
         if(tempo > tempoBala){
-
-            if(bala){
-            
+            if(bala){    
                 // ----------- jogador anda para a direita
                 if(jogador.body.velocity.x > 0){
                     bala.reset(jogador.x + 17, jogador.y + 15);
@@ -160,31 +183,28 @@ nivel1.prototype = {
                 // ----------- jogador está parado 
                 } else{
                     bala.body.velocity.x = 0;
-                }
-                
+                }   
                 tempoBala = tempo + SPACE_BALA;
             }
-
         }
-    }
-    // -------- inimigo foi atingido por bala    
-    function inimigoAtingido(inimigos, balas){
+    },
+    // -------- inimigo foi atingido por bala
+    inimigoAtingido : function(inimigos, balas){
         inimigos.kill();
         balas.kill();
         pontos += 20;
         textoPontuacao.text = 'Pontos: ' + pontos;
         console.log('INIMIGO MORREU');
-    }
+    },
+    
     // -------- balas atingem Tiles
-    function destruirBala(balas, layer){
+    destruirBala : function(balas, layer){
         balas.kill();
-    }
-
-    function jogadorAtingido(jogador, inimigos){
-        jogador.kill();
-        console.log('JOGADOR MORREU');
-    }
-    function jogadorPassaNivel(jogador, portal){
+    },
+    
+    jogadorPassaNivel : function(jogador, portal){
         portal.kill();
         console.log('JOGADOR PASSOU NIVEL');
     }
+    
+};

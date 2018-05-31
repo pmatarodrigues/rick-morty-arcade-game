@@ -16,16 +16,18 @@
         <script type="text/javascript" src="js/menu.js"></script>
         <script type="text/javascript" src="js/nivel1.js"></script>
         <script type="text/javascript" src="js/init.js"></script>
+        <script type="text/javascript" src="js/gameover.js"></script>
 
         <script>
             (function(){
-                var jogo = new Phaser.Game(800, 600, Phaser.AUTO, "game");
+                var jogo = new Phaser.Game(1100, 600, Phaser.AUTO, "game");
             
                 jogo.state.add("Init", init);
                 jogo.state.add("Preload", preload);
                 jogo.state.add("menu", menu);
                 jogo.state.add("nivel1", nivel1);
-                //teste
+                jogo.state.add("gameover", gameover);
+                
                 jogo.state.start("Init");
              
              })();    

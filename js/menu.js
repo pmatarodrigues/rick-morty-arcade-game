@@ -6,10 +6,11 @@ menu.prototype = {
 
     create : function(){
 
-        var btnPlay = this.game.add.button(500, 300, "play", 
+        this.stage.backgroundColor = '#69F0AE';
+        var btnPlay = this.game.add.button(550, 300, "play", 
                                             this.iniciaJogo, this
                                           );
-        btnPlay.anchor.setTo(1, 1);
+        btnPlay.anchor.setTo(0.5);
     },
     
     iniciaJogo : function(){

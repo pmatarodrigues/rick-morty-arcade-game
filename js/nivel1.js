@@ -7,7 +7,6 @@ var nivel1 = function(game){
     
     var layer;
     var jogador;
-    var vidas;
     
     var bala;
     var botaoDisparar;
@@ -18,10 +17,8 @@ nivel1.prototype = {
         
     create : function(game){
         this.stage.backgroundColor = '#4FC3F7';
-        pontos = 0;
         tempo = this.game.time.now;
         tempoBala = 0;
-        vidas = 4;
         
         // ------------------------- MAPA --------------------- //
         map = game.add.tilemap('map');
@@ -37,7 +34,7 @@ nivel1.prototype = {
         map.createFromObjects('portal', 14, 'portal', 0, true, false);
         this.game.physics.arcade.enable(portal);
 
-        textoPontuacao = game.add.text(300, 540, 'Pontos: ' + pontos, 
+        textoPontuacao = game.add.text(700, 540, 'Pontos: ' + window.pontos, 
                                            {fontSize: '32px',
                                             fill: '#fff',
                                             boundsAlignH: 'top',
@@ -47,7 +44,7 @@ nivel1.prototype = {
                                        );
         textoPontuacao.fixedToCamera = true;
         
-        textoVidas = game.add.text(600, 540, 'Vidas: ' + vidas, 
+        textoVidas = game.add.text(910, 540, 'Vidas: ' + window.vidas, 
                                            {fontSize: '32px',
                                             fill: '#fff',
                                             boundsAlignH: 'top',
@@ -56,6 +53,17 @@ nivel1.prototype = {
                                            }
                                        );
         textoVidas.fixedToCamera = true;
+        
+        textoNivel = game.add.text(100, 540, 'NIVEL 1', 
+                                           {fontSize: '40px',
+                                            fill: '#fff',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        
+        textoNivel.fixedToCamera = false;
         
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -125,16 +133,19 @@ nivel1.prototype = {
         });
         
         game.physics.arcade.collide(inimigos, jogador, function(jogador, inimigos){
-                                        vidas--;
-                                        textoVidas.text = 'Vidas: ' + vidas;
+                                        window.vidas--;
+                                        textoVidas.text = 'Vidas: ' + window.vidas;
                                         inimigos.kill();
-                                        if(vidas == 0){
+                                        if(window.vidas == 0){
                                             game.state.start('gameover');
                                         }
                                     });
         game.physics.arcade.collide(balas, layer, this.destruirBala);
         game.physics.arcade.collide(inimigos, balas, this.inimigoAtingido);
-        game.physics.arcade.collide(jogador, portal, this.jogadorPassaNivel);
+        game.physics.arcade.collide(jogador, portal, function(jogador, portal){
+                                                        portal.kill();
+                                                        game.state.start('nivel2');
+                                                     });
         tempo = this.game.time.now;
         game = this.game;
         
@@ -192,19 +203,13 @@ nivel1.prototype = {
     inimigoAtingido : function(inimigos, balas){
         inimigos.kill();
         balas.kill();
-        pontos += 20;
-        textoPontuacao.text = 'Pontos: ' + pontos;
+        window.pontos += 20;
+        textoPontuacao.text = 'Pontos: ' + window.pontos;
         console.log('INIMIGO MORREU');
     },
     
     // -------- balas atingem Tiles
     destruirBala : function(balas, layer){
         balas.kill();
-    },
-    
-    jogadorPassaNivel : function(jogador, portal){
-        portal.kill();
-        console.log('JOGADOR PASSOU NIVEL');
     }
-    
 };

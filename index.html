@@ -7,26 +7,35 @@
         <style type="text/css">
             body{
                 margin: 0;
-                background: #4FC3F7;
+                background: #263238;
             }
         </style>
     
         <script type="text/javascript" src="js/phaser.min.js"></script>
         <script type="text/javascript" src="js/preload.js"></script>
         <script type="text/javascript" src="js/menu.js"></script>
-        <script type="text/javascript" src="js/nivel1.js"></script>
         <script type="text/javascript" src="js/init.js"></script>
         <script type="text/javascript" src="js/gameover.js"></script>
+        <script type="text/javascript" src="js/vitoria.js"></script>
+        <script type="text/javascript" src="js/nivel1.js"></script>
+        <script type="text/javascript" src="js/nivel2.js"></script>
+        <script type="text/javascript" src="js/nivel3.js"></script>
 
         <script>
             (function(){
                 var jogo = new Phaser.Game(1100, 600, Phaser.AUTO, "game");
+                
+                window.pontos = 0;
+                window.vidas = 3;
             
                 jogo.state.add("Init", init);
                 jogo.state.add("Preload", preload);
                 jogo.state.add("menu", menu);
-                jogo.state.add("nivel1", nivel1);
                 jogo.state.add("gameover", gameover);
+                jogo.state.add("vitoria", vitoria);
+                jogo.state.add("nivel1", nivel1);
+                jogo.state.add("nivel2", nivel2);
+                jogo.state.add("nivel3", nivel3);
                 
                 jogo.state.start("Init");
              

@@ -1,11 +1,11 @@
-var gameover = function(game){}
+var vitoria = function(game){}
 
 
-gameover.prototype = {
+vitoria.prototype = {
     create : function(){
         this.stage.backgroundColor = '#69F0AE';
         
-        textoGameOver = this.game.add.text(550, 240, 'GAME OVER!',
+        textoGameOver = this.game.add.text(550, 240, 'VITORIA',
                                     {fontSize: '60px',
                                     fill: '#000',
                                     boundsAlignH: 'top',
@@ -15,7 +15,7 @@ gameover.prototype = {
                           );
         textoGameOver.anchor.set(0.5);
         
-        textoGameOverVoltarAoJogo = this.game.add.text(550, 340, 'Prima ESPAÇO para tentar novamente',
+        textoGameOverVoltarAoJogo = this.game.add.text(550, 340, 'Prima ESPAÇO para voltar ao menu',
                                     {fontSize: '40px',
                                     fill: '#000',
                                     boundsAlignH: 'top',

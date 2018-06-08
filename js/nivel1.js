@@ -12,6 +12,14 @@ var nivel1 = function(game){
     var botaoDisparar;
 }
 
+WebFontConfig = {
+
+    active: function() { game.time.events.add(Phaser.Timer.SECOND, createText, this); },
+
+    google: {
+      families: ['Press Start 2P']
+    }
+}; 
 
 nivel1.prototype = {
         
@@ -19,6 +27,11 @@ nivel1.prototype = {
         this.stage.backgroundColor = '#4FC3F7';
         tempo = this.game.time.now;
         tempoBala = 0;
+
+        // ----------------------- AUDIO --------------------- //
+        tiro = game.add.sound('tiro');
+        laser = game.add.sound('laser');
+
         
         // ------------------------- MAPA --------------------- //
         map = game.add.tilemap('map');
@@ -31,11 +44,12 @@ nivel1.prototype = {
         layer.resizeWorld();
         
         portal = this.game.add.sprite(1200, 70, 'portal');
+
         map.createFromObjects('portal', 14, 'portal', 0, true, false);
         this.game.physics.arcade.enable(portal);
 
-        textoPontuacao = game.add.text(700, 540, 'Pontos: ' + window.pontos, 
-                                           {fontSize: '32px',
+        textoPontuacao = game.add.text(650, 540, 'Pontos: ' + window.pontos, 
+                                           {fontSize: '20px',
                                             fill: '#fff',
                                             boundsAlignH: 'top',
                                             boundsAlignV: 'top',
@@ -43,9 +57,10 @@ nivel1.prototype = {
                                            }
                                        );
         textoPontuacao.fixedToCamera = true;
+        textoPontuacao.font = 'Press Start 2P';
         
         textoVidas = game.add.text(910, 540, 'Vidas: ' + window.vidas, 
-                                           {fontSize: '32px',
+                                           {fontSize: '20px',
                                             fill: '#fff',
                                             boundsAlignH: 'top',
                                             boundsAlignV: 'top',
@@ -53,6 +68,8 @@ nivel1.prototype = {
                                            }
                                        );
         textoVidas.fixedToCamera = true;
+        textoVidas.font = 'Press Start 2P';
+
         
         textoNivel = game.add.text(100, 540, 'NIVEL 1', 
                                            {fontSize: '40px',
@@ -64,6 +81,11 @@ nivel1.prototype = {
                                        );
         
         textoNivel.fixedToCamera = false;
+        textoNivel.font = 'Press Start 2P';
+
+        // -------- imagem do sol
+        screaming_sun = this.game.add.sprite(100, 90, 'screaming_sun');
+
         
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -115,18 +137,79 @@ nivel1.prototype = {
         balas.setAll('checkWorldBounds', true);
         
         botaoDisparar = this.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+
+        background_intromenu = game.add.sprite(550, 320, 'nivelintro_background');
+        background_intromenu.anchor.set(0.5);
+        background_intromenu.fixedToCamera = true;
+
+
+        textoNivelNome = game.add.text(550, 300, 'Terra do Sol Gritante', 
+                                           {fontSize: '23px',
+                                            fill: '#fff',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        textoNivelNome.anchor.set(0.5);
+        textoNivelNome.fixedToCamera = true;
+        textoNivelNome.font = 'Press Start 2P'; 
+
+        textoNivelAviso = game.add.text(550, 350, 'Acerte nos inimigos para ganhar pontos \nAlcance o portal para mudar de Planeta', 
+                                           {fontSize: '10px',
+                                            fill: '#FFF',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                    );
+        textoNivelAviso.anchor.set(0.5);
+        textoNivelAviso.fixedToCamera = true;
+        textoNivelAviso.font = 'Press Start 2P';
+        
+        // -- botão de pausa do jogo
+        // -- -----------------------------------------
+		
+        this.btnPausa = this.add.button( 1100, 10, 'pausa', 
+                                           this.menuPausa, this);
+		this.btnPausa.anchor.set(1, 0);
+        this.btnPausa.input.useHandCursor = true;
+        this.btnPausa.fixedToCamera = true;
+        
+        // -- -----------------------------------------
+
     
     },
     
     update : function(game){
+        /*
+        var jogoEmPausa = false;
+
+        
+        if(jogoEmPausa){
+            if(botaoPausa.isDown){
+                jogoEmPausa = false;
+                game.paused = false;
+            }
+        } else{
+            if(botaoPausa.isDown){
+                jogoEmPausa = true;
+                game.paused = true;
+            }
+        }
+        */
         game.physics.arcade.collide(jogador, layer);
         game.physics.arcade.collide(inimigos, layer, function(inimigos, layer){
             if(inimigos.body.blocked.right && inimigos.body.blocked.down){
-                inimigos.body.velocity.x = game.rnd.integerInRange(-100, -50);
+                if(inimigos.vida == null){
+                    inimigos.body.velocity.x = game.rnd.integerInRange(-100, -50);
+                }
                 inimigos.animations.play('caminha_esquerda');
             }
             if(inimigos.body.blocked.left && inimigos.body.blocked.down){
-                inimigos.body.velocity.x = game.rnd.integerInRange(50, 100);
+                if(inimigos.vida == null){
+                    inimigos.body.velocity.x = game.rnd.integerInRange(50, 100);
+                }
                 inimigos.animations.play('caminha_direita');
             }
             
@@ -148,7 +231,17 @@ nivel1.prototype = {
                                                      });
         tempo = this.game.time.now;
         game = this.game;
-        
+           // --- eliminar o texto de aviso do nivel após X segundos
+        game.time.events.add(3000, function(){
+            textoNivelAviso.destroy()
+        });
+        game.time.events.add(3000, function(){
+            textoNivelNome.destroy()
+        });
+        game.time.events.add(3000, function(){
+            background_intromenu.destroy();
+        });
+
         
         jogador.body.velocity.x = 0;
         
@@ -176,6 +269,49 @@ nivel1.prototype = {
         
     },
     
+    menuPausa: function() {
+        // -- Estado do jogo em "PAUSE"
+		this.game.paused = true;
+        
+		background_pausa = this.game.add.sprite(550, 320, 'nivelintro_background');
+        background_pausa.anchor.set(0.5);
+        
+        textoPausa = this.game.add.text(550, 300, 'PAUSA', 
+                                           {fontSize: '20px',
+                                            fill: '#fff',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        textoPausa.fixedToCamera = true;
+        textoPausa.anchor.set(0.5);
+        textoPausa.font = 'Press Start 2P';
+        descricaoPausa = this.game.add.text(550, 350, 'Clique no ecrã para voltar ao jogo', 
+                                           {fontSize: '15px',
+                                            fill: '#fff',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        descricaoPausa.fixedToCamera = true;
+        descricaoPausa.anchor.set(0.5);
+        descricaoPausa.font = 'Press Start 2P';
+        
+        // -- função adicionada que irá aguardar que um qualquer tecla seja pressionada
+        // -- -----------------------------------------
+        this.input.onDown.add(function(){
+                // -- "destrói" a mensagem de texto
+                background_pausa.destroy();
+                textoPausa.destroy();
+                descricaoPausa.destroy();
+                // -- retira o estado do jogo de "PAUSE"
+                this.game.paused = false;
+		}, this);
+        // -- -----------------------------------------
+	},
+    
     dispararBala : function(){
         var VEL_BALA = 300;
         var SPACE_BALA = 250;
@@ -195,17 +331,36 @@ nivel1.prototype = {
                 } else{
                     bala.body.velocity.x = 0;
                 }   
+                tiro.play();
                 tempoBala = tempo + SPACE_BALA;
             }
         }
     },
     // -------- inimigo foi atingido por bala
     inimigoAtingido : function(inimigos, balas){
-        inimigos.kill();
+        // ---- inimigos têm vida de 3 
+        // ---- já foi atingido
+        if(inimigos.vida != null){
+            inimigos.vida --;
+            // --- muda cor para vermelho
+            inimigos.tint = 0xf44336;
+            // --- aumentar a velocidade quando é atingido
+            inimigos.body.velocity.x += 5;
+        // --- atingido pela primeira vez 
+        }else{
+            inimigos.vida = 2;
+            // --- muda cor para amarelo
+            inimigos.body.velocity.x += 5;
+            inimigos.tint = 0xFFF176;
+        }
+        window.pontos += 5;
         balas.kill();
-        window.pontos += 20;
         textoPontuacao.text = 'Pontos: ' + window.pontos;
-        console.log('INIMIGO MORREU');
+        console.log('INIMIGO ATINGIDO');
+        if(inimigos.vida == 0){
+            inimigos.kill();
+            window.pontos += 20;
+        }
     },
     
     // -------- balas atingem Tiles

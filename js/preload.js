@@ -18,23 +18,41 @@ preload.prototype = {
         this.game.load.spritesheet("parasitic_morty", "assets/parasitic_morty.png", 42.25, 47);
         this.game.load.spritesheet("anomaly_morty", "assets/anomaly_morty.png", 42.25, 47);
         this.game.load.spritesheet("final_morty", "assets/final_morty.png", 131.25, 164.5);
+
         // -- objetos
-        this.game.load.image('bala', 'assets/bala.png');
-        this.game.load.image('bala_inimigo', 'assets/bala_inimigo.png');
-        this.game.load.image('vidas', 'assets/vidas.png');
+        this.game.load.image('bala', 'assets/objetos/bala.png');
+        this.game.load.image('bala_inimigo', 'assets/objetos/bala_inimigo.png');
+        this.game.load.image('vidas', 'assets/objetos/vidas.png');
+
+        this.game.load.image('screaming_sun', 'assets/objetos/screaming_sun.png');
+        this.game.load.image('nivelintro_background', 'assets/objetos/nivelintro_background.png');
 
         
         // ---- carrega os assets
         this.game.load.image("play", "assets/play.png");
+        this.game.load.image("pausa", "assets/pausa.png");
         this.game.load.image("home_logo", "assets/rickandmorty_home.png");
+        
+        this.game.load.image("vitoria", "assets/vitoria.png");
+        this.game.load.image("gameover", "assets/gameover.png");
+
 
         // --- mapa
-        this.game.load.tilemap('map', 'assets/map.json', null, Phaser.Tilemap.TILED_JSON);
-        this.game.load.tilemap('map_nivel2', 'assets/map_nivel2.json', null, Phaser.Tilemap.TILED_JSON);
-        this.game.load.tilemap('map_nivel3', 'assets/map_nivel3.json', null, Phaser.Tilemap.TILED_JSON);
-        this.game.load.image('tiles', 'assets/tiles.png');
-        this.game.load.image('tiles2', 'assets/tiles2.png');
-        this.game.load.image('portal', 'assets/portal.png');
+        this.game.load.tilemap('map', 'assets/mapa/map.json', null, Phaser.Tilemap.TILED_JSON);
+        this.game.load.tilemap('map_nivel2', 'assets/mapa/map_nivel2_t.json', null, Phaser.Tilemap.TILED_JSON);
+        this.game.load.tilemap('map_nivel3', 'assets/mapa/map_nivel3_t.json', null, Phaser.Tilemap.TILED_JSON);
+        this.game.load.image('tiles', 'assets/mapa/tiles.png');
+        this.game.load.image('tiles2', 'assets/mapa/tiles2.png');
+        this.game.load.image('portal', 'assets/objetos/portal.png');
+        this.game.load.image('setas', 'assets/mapa/seta.png');
+
+
+        // --- audio
+        this.game.load.audio('tiro', 'assets/audio/tiro.mp3');
+        this.game.load.audio('laser', 'assets/audio/laser.mp3');
+
+        this.game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+
 
     },
     

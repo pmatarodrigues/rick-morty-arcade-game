@@ -13,6 +13,15 @@ var nivel3 = function(game){
 }
 
 
+WebFontConfig = {
+
+    //active: function() { game.time.events.add(Phaser.Timer.SECOND, createText, this); },
+
+    google: {
+      families: ['Press Start 2P']
+    }
+}; 
+
 nivel3.prototype = {
         
     create : function(game){
@@ -22,6 +31,12 @@ nivel3.prototype = {
         window.vidas += 5;
         vidaInimigo = 10;
         inimigoVivo = true;
+        inimigoPodeDisparar = false;
+
+        // ------------------------ AUDIO --------------------- // 
+        tiro = game.add.sound('tiro');
+        laser = game.add.sound('laser');
+
         
         // ------------------------- MAPA --------------------- //
         map = game.add.tilemap('map_nivel3');
@@ -32,8 +47,11 @@ nivel3.prototype = {
         layer = map.createLayer('Camada de Tiles 1');
         layer.resizeWorld();
 
-        textoPontuacao = game.add.text(650, 540, 'Pontos: ' + window.pontos, 
-                                           {fontSize: '32px',
+        layerBalasNaoPassaveis = map.createLayer('Camada de Tiles 2');
+        
+
+        textoPontuacao = game.add.text(550, 540, 'Pontos: ' + window.pontos, 
+                                           {fontSize: '20px',
                                             fill: '#000',
                                             boundsAlignH: 'top',
                                             boundsAlignV: 'top',
@@ -41,9 +59,11 @@ nivel3.prototype = {
                                            }
                                        );
         textoPontuacao.fixedToCamera = true;
+        textoPontuacao.font = 'Press Start 2P';
+
         
-        textoVidas = game.add.text(850, 540, 'Vidas: ' + window.vidas, 
-                                           {fontSize: '32px',
+        textoVidas = game.add.text(850, 550, 'Vidas: ' + window.vidas, 
+                                           {fontSize: '20px',
                                             fill: '#000',
                                             boundsAlignH: 'top',
                                             boundsAlignV: 'top',
@@ -51,6 +71,7 @@ nivel3.prototype = {
                                            }
                                        );
         textoVidas.fixedToCamera = true;
+        textoVidas.font = 'Press Start 2P';
 
         
         textoNivel = game.add.text(100, 540, 'NIVEL 3', 
@@ -63,6 +84,20 @@ nivel3.prototype = {
                                        );
         
         textoNivel.fixedToCamera = false;
+        textoNivel.font = 'Press Start 2P';
+
+        textoVidaInimigo = game.add.text(400, 50, vidaInimigo + ' HP', 
+                                           {fontSize: '20px',
+                                            fill: '#000',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        
+        textoVidas.fixedToCamera = false;
+        textoVidaInimigo.font = 'Press Start 2P';
+
         
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -123,6 +158,47 @@ nivel3.prototype = {
         balasInimigas.setAll('anchor.y', 1);
         balasInimigas.setAll('outOfBoundsKill', true);
         balasInimigas.setAll('checkWorldBounds', true);
+
+
+        background_intromenu = game.add.sprite(550, 320, 'nivelintro_background');
+        background_intromenu.anchor.set(0.5);
+        background_intromenu.fixedToCamera = true;
+
+
+        textoNivelNome = game.add.text(550, 300, 'Final Boss', 
+                                           {fontSize: '23px',
+                                            fill: '#fff',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        textoNivelNome.anchor.set(0.5);
+        textoNivelNome.fixedToCamera = true;
+        textoNivelNome.font = 'Press Start 2P'; 
+
+        textoNivelAviso = game.add.text(550, 350, 'Evite ser atingido pelos mísseis do Exoskeleton Morty', 
+                                           {fontSize: '10px',
+                                            fill: '#FFF',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                    );
+        textoNivelAviso.anchor.set(0.5);
+        textoNivelAviso.fixedToCamera = true;
+        textoNivelAviso.font = 'Press Start 2P';
+
+        // -- botão de pausa do jogo
+        // -- -----------------------------------------
+        
+        this.btnPausa = this.add.button( 1100, 10, 'pausa', 
+                                           this.menuPausa, this);
+        this.btnPausa.anchor.set(1, 0);
+        this.btnPausa.input.useHandCursor = true;
+        this.btnPausa.fixedToCamera = true;
+        
+        // -- -----------------------------------------
             
     },
     
@@ -140,6 +216,7 @@ nivel3.prototype = {
         game.physics.arcade.collide(layer, balas, function(balas, layer){
                                                     balas.kill();
                                                   });
+        game.physics.arcade.collide(balasInimigas, layerBalasNaoPassaveis);
         game.physics.arcade.collide(inimigo, layer);
         game.physics.arcade.collide(jogador, layer);
         game.physics.arcade.collide(jogador, balasInimigas, function(jogador, balasInimigas){
@@ -154,7 +231,20 @@ nivel3.prototype = {
 
         tempo = this.game.time.now;
         game = this.game;
+
+            // --- eliminar o texto de aviso do nivel após X segundos
+        game.time.events.add(3000, function(){
+            textoNivelAviso.destroy();
+            textoNivelNome.destroy();
+            background_intromenu.destroy();
+            inimigoPodeDisparar = true;
+        });
+        //game.time.events.add(3000, function(){textoNivelNome.destroy()});
+        //game.time.events.add(3000, function(){background_intromenu.destroy()});
+        //game.time.events.add(3000, function(){inimigoPodeDisparar = true});
         
+        textoVidaInimigo.x = inimigo.body.x;
+        textoVidaInimigo.y = inimigo.body.y - 10;
         
         jogador.body.velocity.x = 0;
         
@@ -195,11 +285,56 @@ nivel3.prototype = {
             if(inimigo.body.y < jogador.body.y){
                 inimigo.body.velocity.y = 100;
             }
+        // --- inimigo não pode disparar enquanto não desaparcer a janela de introdução do nivel
+        if(inimigoPodeDisparar == true){
             this.inimigoDisparaBala(inimigo, jogador);
-        
+        }
         if(vidaInimigo == 0){
             game.state.start('vitoria');
         }
+    },
+
+    menuPausa: function() {
+        // -- Estado do jogo em "PAUSE"
+        this.game.paused = true;
+        
+        background_pausa = this.game.add.sprite(550, 320, 'nivelintro_background');
+        background_pausa.anchor.set(0.5);
+        
+        textoPausa = this.game.add.text(550, 300, 'PAUSA', 
+                                           {fontSize: '20px',
+                                            fill: '#fff',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        textoPausa.fixedToCamera = true;
+        textoPausa.anchor.set(0.5);
+        textoPausa.font = 'Press Start 2P';
+        descricaoPausa = this.game.add.text(550, 350, 'Clique no ecrã para voltar ao jogo', 
+                                           {fontSize: '15px',
+                                            fill: '#fff',
+                                            boundsAlignH: 'top',
+                                            boundsAlignV: 'top',
+                                            align: 'left'
+                                           }
+                                       );
+        descricaoPausa.fixedToCamera = true;
+        descricaoPausa.anchor.set(0.5);
+        descricaoPausa.font = 'Press Start 2P';
+        
+        // -- função adicionada que irá aguardar que um qualquer tecla seja pressionada
+        // -- -----------------------------------------
+        this.input.onDown.add(function(){
+                // -- "destrói" a mensagem de texto
+                background_pausa.destroy();
+                textoPausa.destroy();
+                descricaoPausa.destroy();
+                // -- retira o estado do jogo de "PAUSE"
+                this.game.paused = false;
+        }, this);
+        // -- -----------------------------------------
     },
     
     inimigoDisparaBala : function(inimigo, jogador){
@@ -211,6 +346,7 @@ nivel3.prototype = {
             if(tempo > tempoBala){
                 if(balaInimiga){
                         balaInimiga.reset(inimigo.body.x + 20, inimigo.body.y + 120);
+                        laser.play("",0,0.5);
                     // --------- bala é disparada na direção do jogador
                         balaInimiga.rotation = this.game.physics.arcade.moveToObject(balaInimiga, jogador, VEL_BALA);
                         //balaInimiga.body.velocity.x = VEL_BALA;
@@ -243,6 +379,7 @@ nivel3.prototype = {
                 } else{
                     bala.body.velocity.x = 0;
                 }   
+                tiro.play("",0,0.5);
                 tempoBala = tempo + SPACE_BALA;
             }
         }
@@ -259,6 +396,7 @@ nivel3.prototype = {
         balas.kill();
         window.pontos += 20;
         textoPontuacao.text = 'Pontos: ' + window.pontos;
+        textoVidaInimigo.text = vidaInimigo + ' HP';
         console.log('INIMIGO MORREU');
     },
     
